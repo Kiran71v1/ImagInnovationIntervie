@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -24,12 +24,12 @@ public class SecurityConfigurer extends org.springframework.security.config.anno
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(customUserDetailsService);
+        auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();  // Use BCryptPasswordEncoder for hashed passwords
+        return new BCryptPasswordEncoder();
     }
 
     @Override
@@ -40,14 +40,15 @@ public class SecurityConfigurer extends org.springframework.security.config.anno
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()  // Disable CSRF protection since you're using stateless JWT tokens
+        http.csrf().disable()
             .authorizeRequests()
-            .antMatchers("/authenticate").permitAll()  // Allow unauthenticated access to /authenticate
-            .anyRequest().authenticated()  // Secure all other endpoints
+            .antMatchers("/login", "/api/users/register").permitAll()
+            .antMatchers("/api/employees/**").hasRole("ADMIN") 
+            .anyRequest().authenticated()
             .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);  // Use stateless sessions
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
 }
