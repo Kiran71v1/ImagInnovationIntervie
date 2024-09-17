@@ -46,13 +46,30 @@ Build and Run the Application
 mvn clean install
 mvn spring-boot:run
 
+API Endpoints
+1. User Registration
+URL: /api/users/register
 
+Method: POST
+
+Description: Register a new user with roles.
+
+Request Body:
+
+json
+Copy code
+{
+  "username": "john",
+  "password": "password",
+  "roles": ["ROLE_USER", "ROLE_ADMIN"]
+}
+Response: Returns the saved user details (with encoded password).
 
 JWT Authentication
 Authentication Endpoint
 Before accessing secured endpoints, you must authenticate and receive a JWT token.
 
-URL: /authenticate
+URL: /login
 
 Method: POST
 
